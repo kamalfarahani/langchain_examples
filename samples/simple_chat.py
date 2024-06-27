@@ -2,8 +2,8 @@ from operator import itemgetter
 import uuid
 
 from colorama import Fore
-from langchain_core.language_models.llms import BaseLLM
-from langchain_community.llms import Ollama
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_community.chat_models import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -64,7 +64,7 @@ def make_config() -> dict:
     return {"configurable": {"session_id": make_session_id()}}
 
 
-def start_chat(llm: BaseLLM) -> None:
+def start_chat(llm: BaseChatModel) -> None:
     """
     Starts the chat.
 
@@ -123,7 +123,7 @@ def start_chat(llm: BaseLLM) -> None:
 
 
 def main():
-    llm = Ollama(model="llama3")
+    llm = ChatOllama(model="llama3")
     start_chat(llm)
 
 
