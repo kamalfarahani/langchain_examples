@@ -1,14 +1,19 @@
+from operator import itemgetter
 import uuid
 
 from colorama import Fore
 from langchain_core.language_models.llms import BaseLLM
 from langchain_community.llms import Ollama
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, trim_messages
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
+
+
+HISTORY_TOKEN_LENGTH = 1000
 
 
 class MessageHistoryStore:
@@ -79,7 +84,22 @@ def start_chat(llm: BaseLLM) -> None:
         ]
     )
 
-    chain = prompt | llm | StrOutputParser()
+    trimmer = trim_messages(
+        max_tokens=HISTORY_TOKEN_LENGTH,
+        strategy="last",
+        token_counter=llm,
+        include_system=True,
+        allow_partial=False,
+        start_on="human",
+    )
+
+    chain = (
+        RunnablePassthrough.assign(messages=itemgetter("messages") | trimmer)
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+
     message_store = MessageHistoryStore(store={})
     model = RunnableWithMessageHistory(
         chain,
@@ -91,12 +111,15 @@ def start_chat(llm: BaseLLM) -> None:
     language = input(f"{Fore.BLUE}>> Enter language: {Fore.RESET}")
     while True:
         text = input(f"{Fore.BLUE}>> Enter text: {Fore.RESET}")
-        result = model.invoke(
+        stream = model.stream(
             {"messages": [HumanMessage(content=text)], "language": language},
             config=config,
         )
 
-        print(f"{Fore.MAGENTA}{result}{Fore.RESET}")
+        for token in stream:
+            print(f"{Fore.CYAN}{token}", end="", flush=True)
+
+        print(Fore.RESET)
 
 
 def main():
