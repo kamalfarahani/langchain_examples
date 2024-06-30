@@ -1,57 +1,104 @@
 from pathlib import Path
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_community.chat_models import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import HumanMessage, trim_messages
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_community.chat_message_histories import ChatMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.embeddings.embeddings import Embeddings
+from langchain_core.documents.base import Document
 from langchain_chroma import Chroma
 
-from doc_assitant.history import MessageHistoryStore
-from doc_assitant.constants import SYSTEM_PRIME_PROMPT, MESSAGE_PROMPT_TEMPLATE
+from doc_assitant.history import MessageHistoryStore, make_history_config
+from doc_assitant.utils import DocumentPages, load_pdf_documents
+from doc_assitant.prompts import user_chat_prompt, summarize_prompt
 
 
 class Chatbot:
     def __init__(
-        self, llm: BaseChatModel, embeddings: Embeddings, documents_path: Path
+        self,
+        llm: BaseChatModel,
+        embeddings: Embeddings,
+        documents_path: Path,
+        max_retrives_for_search=10,
     ) -> None:
         self.llm = llm
         self.embeddings = embeddings
+        self.documents_path = documents_path
+        self.max_retrives_for_search = max_retrives_for_search
+
         self.setup_chain()
+        self.setup_chatbot()
+        self.setup_retriver()
 
     def setup_chain(self) -> None:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    SYSTEM_PRIME_PROMPT,
-                ),
-                (
-                    "user",
-                    MESSAGE_PROMPT_TEMPLATE,
-                ),
-            ]
-        )
-
-        self.chain = prompt | self.llm | StrOutputParser()
+        self.chain = user_chat_prompt | self.llm | StrOutputParser()
 
     def setup_chatbot(self) -> None:
-        history_store = MessageHistoryStore()
+        history_store = MessageHistoryStore(token_counter=self.llm)
         self.chatbot = RunnableWithMessageHistory(
-            self.chain,
+            self.chain,  # type: ignore
             history_store,
             input_messages_key="question",
         )
 
     def setup_retriver(self) -> None:
-        documents = load_
-        vectorstore = Chroma.from_documents(documents, embedding=self.embeddings)
+        documents = load_pdf_documents(documents_path=self.documents_path)
+        summaries = self.summarize_documents(documents=documents)
+        vectorstore = Chroma.from_documents(summaries, embedding=self.embeddings)
+
         self.retriever = vectorstore.as_retriever(
             search_type="similarity",
-            search_kwargs={"k": 1},
+            search_kwargs={"k": self.max_retrives_for_search},
         )
+
+    def summarize_documents(self, documents: list[DocumentPages]) -> list[Document]:
+        """
+        Summarizes the documents.
+
+        Args:
+            documents: The documents to summarize.
+
+        Returns:
+            (list[Document]): The summarized documents.
+        """
+        summarizer = summarize_prompt | self.llm | StrOutputParser()
+
+        def summarize(doc: DocumentPages) -> Document:
+            """
+            Summarizes the document.
+
+            Args:
+                doc: The document to summarize.
+
+            Returns:
+                (Document): The summarized document.
+            """
+            history_config = make_history_config()
+            last_summary = "No summary yet."
+            for page in doc:
+                new_summary = summarizer.invoke(
+                    {"page": page.page_content, "last_summary": last_summary},
+                    config=history_config,  # type: ignore
+                )
+
+                last_summary = new_summary
+
+            metadata = {
+                "source": doc[0].metadata.get("source", "No source."),
+            }
+
+            return Document(page_content=last_summary, metadata=metadata)
+
+        return [summarize(doc) for doc in documents]
+
+    def ask(self, question: str) -> str:
+        """
+        Asks the question.
+
+        Args:
+            question: The question to ask.
+
+        Returns:
+            (str): The answer.
+        """
+        result = self.retriever.invoke(question)
+        return result
