@@ -17,7 +17,13 @@ Context:
 """
 
 SUMMARIZE_PROMPT_TEXT = """
-Summarize the information from this articale given this new page and the last summary:
+Under the "new page" marker is the new page of an article you want to summarize.
+You have summarized the previous pages under "last summary" marker.
+You should use the new page information and the last summary to create a new summary until this page composition of these parts:
+1. The aim of the research or article.
+2. The expriments done (if any).
+3. The conclusion of the research or article.
+Output only the summary content and no other extra text or verbose information.
 
 new page:
 {page}
