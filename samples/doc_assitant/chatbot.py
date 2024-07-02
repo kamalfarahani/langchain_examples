@@ -23,6 +23,18 @@ class Chatbot:
         documents_path: Path,
         max_retrives_for_search=10,
     ) -> None:
+        """
+        Initializes the chatbot.
+
+        Args:
+            llm: The LLM to use.
+            embeddings: The embeddings to use.
+            documents_path: The path to the documents.
+            max_retrives_for_search: The maximum number of retrives for search.
+
+        Returns:
+            None
+        """
         self.llm = llm
         self.embeddings = embeddings
         self.documents_path = documents_path
@@ -33,9 +45,27 @@ class Chatbot:
         self.setup_retriver()
 
     def setup_chain(self) -> None:
+        """
+        Sets up the chain.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self.chain = user_chat_prompt | self.llm | StrOutputParser()
 
     def setup_chatbot(self) -> None:
+        """
+        Sets up the chatbot.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         self.history_config = make_history_config()
         self.history_store = MessageHistoryStore(token_counter=self.llm)
         self.session_id = self.history_config["configurable"]["session_id"]
@@ -46,6 +76,15 @@ class Chatbot:
         )
 
     def setup_retriver(self) -> None:
+        """
+        Sets up the retriever.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         documents = load_pdf_documents(documents_path=self.documents_path)
         summaries = self.summarize_documents(documents=documents)
         vectorstore = Chroma.from_documents(summaries, embedding=self.embeddings)
