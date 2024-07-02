@@ -50,13 +50,45 @@ class MessageHistoryStore:
             self.store[session_id] = ChatMessageHistory()
 
         if len(self.store[session_id].messages) > 0:
-            history = ChatMessageHistory(
+            self.store[session_id] = ChatMessageHistory(
                 messages=self.trimmer.invoke(self.store[session_id].messages)
             )
-        else:
-            history = self.store[session_id]
 
-        return history
+        return self.store[session_id]
+
+    def add_user_message_to_history(self, session_id: str, message: str) -> None:
+        """
+        Adds a user message to the message history.
+
+        Args:
+            session_id: The session id.
+            message: The message.
+            message_type: The message type.
+
+        Returns:
+            None
+        """
+        if session_id not in self.store:
+            self.store[session_id] = ChatMessageHistory()
+
+        self.store[session_id].add_user_message(message)
+
+    def add_ai_message_to_history(self, session_id: str, message: str) -> None:
+        """
+        Adds an AI message to the message history.
+
+        Args:
+            session_id: The session id.
+            message: The message.
+            message_type: The message type.
+
+        Returns:
+            None
+        """
+        if session_id not in self.store:
+            self.store[session_id] = ChatMessageHistory()
+
+        self.store[session_id].add_ai_message(message)
 
 
 def make_session_id() -> str:
