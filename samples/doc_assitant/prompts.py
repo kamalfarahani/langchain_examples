@@ -38,11 +38,13 @@ Current information:
 SUMMARIZE_PROMPT_TEXT = """
 Under the "new page" marker is the new page of an article you want to summarize.
 You have summarized the previous pages under "last summary" marker.
-You should use the new page information and the last summary to create a new summary until this page composition of these parts:
+Use the new page information and the last summary to create a new summary until this page composition of these parts:
 1. The aim of the research or article in at leat 250 words and at most 500 words.
 2. The expriments done (if any).
 3. The conclusion of the research or article in at least 100 and at most 200 words.
 Output only the summary content and no other extra text or verbose information.
+
+If new page is just refereces or has no new information, just output last summary.
 
 new page:
 {page}
