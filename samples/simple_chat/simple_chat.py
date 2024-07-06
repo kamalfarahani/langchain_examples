@@ -1,5 +1,6 @@
-from operator import itemgetter
 import uuid
+
+from operator import itemgetter
 
 from colorama import Fore
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -123,7 +124,8 @@ def start_chat(llm: BaseChatModel) -> None:
 
 
 def main():
-    llm = ChatOllama(model="llama3")
+    model_name = input("Enter model name: ")
+    llm = ChatOllama(model=model_name)
     start_chat(llm)
 
 
