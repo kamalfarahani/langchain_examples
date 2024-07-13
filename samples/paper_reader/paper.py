@@ -1,9 +1,15 @@
+import json
+
 from pathlib import Path
 from typing import NamedTuple
 
 from langchain_core.documents.base import Document
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.output_parsers import StrOutputParser
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from paper_reader.prompts import extract_paper_info_prompt
 
 
 class Paper(NamedTuple):
@@ -13,6 +19,34 @@ class Paper(NamedTuple):
     abstract: str
     url: str
     pages: list[Document]
+
+
+def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
+    """
+    Extracts the paper info from the paper path.
+
+    Args:
+        paper_path: The path to the paper.
+
+    Returns:
+        (dict): The paper info containing the title, authors, year and abstract.
+    """
+    loader = PyPDFLoader(str(paper_path))
+    docs = loader.load()
+    frist_page = docs[0]
+
+    # Setup the extract info chain
+    chain = extract_paper_info_prompt | llm | StrOutputParser()
+
+    # Extract the info from the paper
+    json_data = chain.invoke(
+        {"page": frist_page.page_content},
+    )
+
+    # Parse the json data
+    data = json.loads(json_data)
+
+    return data
 
 
 def make_paper_metadata(paper: Paper) -> dict:
