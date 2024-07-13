@@ -73,7 +73,11 @@ def load_paper(
     return paper
 
 
-def split_paper(paper: Paper) -> list[Document]:
+def split_paper(
+    paper: Paper,
+    chunk_size: int = 1000,
+    chunk_overlap: int = 200,
+) -> list[Document]:
     """
     Splits the paper into pages.
 
@@ -81,18 +85,14 @@ def split_paper(paper: Paper) -> list[Document]:
         paper: The paper to split.
 
     Returns:
-        (list[Document]): The list of pages.
+        (list[Document]): The list of spited contents.
     """
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
         add_start_index=True,
     )
 
     splits = text_splitter.split_documents(paper.pages)
-    abstract = Document(
-        page_content=paper.abstract,
-        metadata=make_paper_metadata(paper),
-    )
 
-    return [abstract] + splits
+    return splits
