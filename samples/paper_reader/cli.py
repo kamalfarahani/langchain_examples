@@ -44,6 +44,13 @@ def main():
 
         if question == "exit":
             break
+        elif question == "clear":
+            print("\033[2J\033[;H")
+            continue
+        elif question == "summarize":
+            summary = chatbot.summarize()
+            print_mangenta(summary)
+            continue
 
         answer = chatbot.ask(question)
         print_mangenta(answer)
