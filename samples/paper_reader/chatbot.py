@@ -1,15 +1,9 @@
-from pathlib import Path
-from collections.abc import Iterator
-
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.runnables import RunnablePassthrough
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.embeddings.embeddings import Embeddings
-from langchain_core.documents.base import Document
 from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.summarize import load_summarize_chain
 from langchain_chroma import Chroma
 
 from paper_reader.paper import Paper, split_paper
@@ -43,6 +37,7 @@ class Chatbot:
 
         self.setup_retriever()
         self.setup_chain()
+        self.setup_summarizer()
 
     def setup_retriever(self) -> None:
         """
@@ -84,6 +79,21 @@ class Chatbot:
             question_answer_chain,
         )
 
+    def setup_summarizer(self) -> None:
+        """
+        Sets up the summarizer.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self.summarizer = load_summarize_chain(
+            self.llm,
+            chain_type="map_reduce",
+        )
+
     def ask(self, question: str) -> str:
         """
         Asks the question.
@@ -102,3 +112,18 @@ class Chatbot:
         )
 
         return result["answer"]
+
+    def summarize(self) -> str:
+        """
+        Summarizes the paper.
+
+        Args:
+            None
+
+        Returns:
+            (str): The summary.
+        """
+        docs = split_paper(self.paper)
+        result = self.summarizer.invoke(docs)
+
+        return result["output_text"]
