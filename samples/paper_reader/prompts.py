@@ -23,8 +23,6 @@ Given the first page of a paper extract the information in json format in the fo
     "abstract": str
 }}
 
-Extract the abstract fully with details don't summarize abstact.
-
 if any of the information is missing just put `null` in the json.
 
 Paper First Page:
