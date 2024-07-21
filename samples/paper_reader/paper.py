@@ -38,13 +38,21 @@ def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
     # Setup the extract info chain
     chain = extract_paper_info_prompt | llm | StrOutputParser()
 
-    # Extract the info from the paper
-    json_data = chain.invoke(
-        {"page": frist_page.page_content},
-    )
-
-    # Parse the json data
-    data = json.loads(json_data)
+    while True:
+        # Extract the info from the paper
+        json_data = chain.invoke(
+            {"page": frist_page.page_content},
+        )
+        try:
+            # Convert the json data to a dictionary
+            data = json.loads(json_data)
+        except Exception as e:
+            print("Failed to extract the info from the paper.")
+            print(e)
+            print(json_data)
+            print("Retrying...")
+        else:
+            break
 
     return data
 
