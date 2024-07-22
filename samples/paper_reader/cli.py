@@ -51,6 +51,10 @@ def main():
             summary = chatbot.summarize()
             print_mangenta(summary)
             continue
+        elif question == "keywords":
+            keywords = chatbot.extract_keywords()
+            print_mangenta(keywords)
+            continue
 
         answer = chatbot.ask(question)
         print_mangenta(answer)

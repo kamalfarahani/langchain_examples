@@ -32,6 +32,23 @@ only output the json data in pure string format.
 DO NOT output any other text like "Here is the json data".
 """
 
+EXTRACT_KEYWORDS_PROMPT_TEXT = """\
+Given the abstract and the summary of the paper, extract the scientific and techinical from the paper.
+The output should be in json format in the following schema:
+
+{{
+    "keywords": list[str]
+}}
+
+Only output the json data in pure string format.
+DO NOT output any other text like "Here is the json data".
+
+Abstract:
+{abstract}
+
+Summary:
+{summary}
+"""
 
 chat_prompt = ChatPromptTemplate.from_messages(
     [
@@ -40,4 +57,10 @@ chat_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-extract_paper_info_prompt = PromptTemplate.from_template(EXTRACT_PAPER_INFO_PROMPT_TEXT)
+extract_paper_info_prompt = PromptTemplate.from_template(
+    EXTRACT_PAPER_INFO_PROMPT_TEXT,
+)
+
+extract_keywords_prompt = PromptTemplate.from_template(
+    EXTRACT_KEYWORDS_PROMPT_TEXT,
+)

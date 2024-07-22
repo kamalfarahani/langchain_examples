@@ -1,16 +1,16 @@
+from langchain_core.output_parsers.string import StrOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.embeddings.embeddings import Embeddings
 from langchain import hub
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.summarize import load_summarize_chain
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain.chains.llm import LLMChain
 from langchain_chroma import Chroma
 
 from paper_reader.paper import Paper, split_paper
-from paper_reader.prompts import chat_prompt
+from paper_reader.prompts import chat_prompt, extract_keywords_prompt
 
 
 class Chatbot:
@@ -156,3 +156,24 @@ class Chatbot:
         result = self.summarizer.invoke(docs)
 
         return result["output_text"]
+
+    def extract_keywords(self) -> str:
+        """
+        Extracts the keywords from the paper.
+
+        Args:
+            None
+
+        Returns:
+            (list[str]): The keywords.
+        """
+        chain = extract_keywords_prompt | self.llm | StrOutputParser()
+        summary = self.summarize()
+        result = chain.invoke(
+            {
+                "summary": summary,
+                "abstract": self.paper.abstract,
+            }
+        )
+
+        return result
