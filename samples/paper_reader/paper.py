@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from paper_reader.prompts import extract_paper_info_prompt
+from paper_reader.prompts import extract_paper_info_prompt, extarct_abstract_prompt
 
 
 class Paper(NamedTuple):
@@ -33,15 +33,21 @@ def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
     """
     loader = PyPDFLoader(str(paper_path))
     docs = loader.load()
-    frist_page = docs[0]
+    first_page = docs[0]
 
-    # Setup the extract info chain
-    chain = extract_paper_info_prompt | llm | StrOutputParser()
+    # Setup chains
+    info_chain = extract_paper_info_prompt | llm | StrOutputParser()
+    abstract_chain = extarct_abstract_prompt | llm | StrOutputParser()
+
+    # Extract the abstract
+    abstarct = abstract_chain.invoke(
+        {"page": first_page.page_content},
+    )
 
     while True:
         # Extract the info from the paper
-        json_data = chain.invoke(
-            {"page": frist_page.page_content},
+        json_data = info_chain.invoke(
+            {"page": first_page.page_content},
         )
         try:
             # Convert the json data to a dictionary
@@ -54,6 +60,7 @@ def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
         else:
             break
 
+    data["abstract"] = abstarct
     return data
 
 
