@@ -20,6 +20,31 @@ class Paper(NamedTuple):
     url: str
     pages: list[Document]
 
+    def split(
+        self,
+        chunk_size: int = 1000,
+        chunk_overlap: int = 200,
+    ) -> list[Document]:
+        """
+        Splits the paper into pages.
+
+        Args:
+            chunk_size: The size of the chunk.
+            chunk_overlap: The overlap of the chunk.
+
+        Returns:
+            (list[Document]): The list of spited contents.
+        """
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            add_start_index=True,
+        )
+
+        splits = text_splitter.split_documents(self.pages)
+
+        return splits
+
 
 def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
     """
@@ -120,28 +145,3 @@ def load_paper(
         page.metadata.update(paper_metadata)
 
     return paper
-
-
-def split_paper(
-    paper: Paper,
-    chunk_size: int = 1000,
-    chunk_overlap: int = 200,
-) -> list[Document]:
-    """
-    Splits the paper into pages.
-
-    Args:
-        paper: The paper to split.
-
-    Returns:
-        (list[Document]): The list of spited contents.
-    """
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        add_start_index=True,
-    )
-
-    splits = text_splitter.split_documents(paper.pages)
-
-    return splits
