@@ -42,7 +42,7 @@ DO NOT output any other text like "Here is the abstract".
 """
 
 EXTRACT_KEY_WORDS_PROMPT_TEXT = """\
-Given the following text extract the scientific and techinical keywords from it in the following schema:
+Given the following text extract at most 5 scientific and techinical keywords from it in the following schema:
 {{
     "keywords": list[str]
 }}
@@ -57,6 +57,20 @@ Text:
 EXTRACT_ALL_KEYWORDS_PROMPT_TEXT = """\
 Given the following list of keywords extract the unique keywords in the following schema:
 
+{{
+    "keywords": list[str]
+}}
+
+Only output the json data in pure string format.
+DO NOT output any other text like "Here is the json data".
+
+Keywords:
+{keywords}
+"""
+
+EXTRACT_GIST_KEYWORDS_PROMPT_TEXT = """\
+Given the following keywords from a paper extacrt at most 20 unique keywords that capture the main theme of the keywords.
+Give output in the following schema:
 {{
     "keywords": list[str]
 }}
@@ -89,4 +103,8 @@ extract_keywords_prompt = PromptTemplate.from_template(
 
 extract_all_keywords_prompt = PromptTemplate.from_template(
     EXTRACT_ALL_KEYWORDS_PROMPT_TEXT,
+)
+
+extract_gist_keywords_prompt = PromptTemplate.from_template(
+    EXTRACT_GIST_KEYWORDS_PROMPT_TEXT,
 )
