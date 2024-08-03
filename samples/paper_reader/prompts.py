@@ -41,9 +41,21 @@ Only output the abstarct in pure string format.
 DO NOT output any other text like "Here is the abstract".
 """
 
-EXTRACT_KEYWORDS_PROMPT_TEXT = """\
-Given the abstract and the summary of the paper, extract the scientific and techinical from the paper.
-The output should be in json format in the following schema:
+EXTRACT_KEY_WORDS_PROMPT_TEXT = """\
+Given the following text extract the scientific and techinical keywords from it in the following schema:
+{{
+    "keywords": list[str]
+}}
+
+Only output the json data in pure string format.
+DO NOT output any other text like "Here is the json data".
+
+Text:
+{text}
+"""
+
+EXTRACT_ALL_KEYWORDS_PROMPT_TEXT = """\
+Given the following list of keywords extract the unique keywords in the following schema:
 
 {{
     "keywords": list[str]
@@ -52,11 +64,8 @@ The output should be in json format in the following schema:
 Only output the json data in pure string format.
 DO NOT output any other text like "Here is the json data".
 
-Abstract:
-{abstract}
-
-Summary:
-{summary}
+Keywords:
+{keywords}
 """
 
 chat_prompt = ChatPromptTemplate.from_messages(
@@ -75,9 +84,9 @@ extarct_abstract_prompt = PromptTemplate.from_template(
 )
 
 extract_keywords_prompt = PromptTemplate.from_template(
-    EXTRACT_KEYWORDS_PROMPT_TEXT,
+    EXTRACT_KEY_WORDS_PROMPT_TEXT,
 )
 
-extract_keywords_from_summary_prompt = PromptTemplate.from_template(
-    EXTRACT_KEYWORDS_FROM_SUMMARY_PROMPT_TEXT,
+extract_all_keywords_prompt = PromptTemplate.from_template(
+    EXTRACT_ALL_KEYWORDS_PROMPT_TEXT,
 )

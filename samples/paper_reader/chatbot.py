@@ -11,6 +11,7 @@ from langchain_chroma import Chroma
 
 from paper_reader.paper import Paper
 from paper_reader.summarize import MapReduceSummarize
+from paper_reader.keywords import KeywordsExtractor
 from paper_reader.prompts import chat_prompt, extract_keywords_prompt
 
 
@@ -42,6 +43,7 @@ class Chatbot:
         self.setup_retriever()
         self.setup_chain()
         self.setup_summarizer()
+        self.setup_keywords_extractor()
 
     def setup_retriever(self) -> None:
         """
@@ -95,6 +97,18 @@ class Chatbot:
         """
         self.summarizer = MapReduceSummarize(self.llm)
 
+    def setup_keywords_extractor(self) -> None:
+        """
+        Sets up the keywords extractor.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+        self.keywords_extractor = KeywordsExtractor(self.llm)
+
     def ask(self, question: str) -> str:
         """
         Asks the question.
@@ -126,7 +140,7 @@ class Chatbot:
         """
         return self.summarizer(self.paper)
 
-    def extract_keywords(self) -> str:
+    def extract_keywords(self) -> list[str]:
         """
         Extracts the keywords from the paper.
 
@@ -136,13 +150,4 @@ class Chatbot:
         Returns:
             (list[str]): The keywords.
         """
-        chain = extract_keywords_prompt | self.llm | StrOutputParser()
-        summary = self.summarize()
-        result = chain.invoke(
-            {
-                "summary": summary,
-                "abstract": self.paper.abstract,
-            }
-        )
-
-        return result
+        return ", ".join(self.keywords_extractor(self.paper))
