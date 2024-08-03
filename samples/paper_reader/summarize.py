@@ -25,7 +25,12 @@ class MapReduceSummarize:
             (str): The summary.
         """
         docs = paper.split()
-        summaries = [self.map_chain.invoke({"docs": doc}) for doc in docs]
+        summaries = [
+            self.map_chain.invoke(
+                {"docs": doc.page_content},
+            )
+            for doc in docs
+        ]
         summaries_str = "\n".join(summaries)
 
         return self.reduce_chain.invoke({"doc_summaries": summaries_str})
