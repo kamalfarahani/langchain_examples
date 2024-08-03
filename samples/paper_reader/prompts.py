@@ -77,3 +77,7 @@ extarct_abstract_prompt = PromptTemplate.from_template(
 extract_keywords_prompt = PromptTemplate.from_template(
     EXTRACT_KEYWORDS_PROMPT_TEXT,
 )
+
+extract_keywords_from_summary_prompt = PromptTemplate.from_template(
+    EXTRACT_KEYWORDS_FROM_SUMMARY_PROMPT_TEXT,
+)

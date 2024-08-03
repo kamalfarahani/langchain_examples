@@ -9,7 +9,8 @@ from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain.chains.llm import LLMChain
 from langchain_chroma import Chroma
 
-from paper_reader.paper import Paper, split_paper
+from paper_reader.paper import Paper
+from paper_reader.summarize import MapReduceSummarize
 from paper_reader.prompts import chat_prompt, extract_keywords_prompt
 
 
@@ -52,7 +53,7 @@ class Chatbot:
         Returns:
             None
         """
-        docs = split_paper(self.paper)
+        docs = self.paper.split()
         vectorstore = Chroma.from_documents(
             documents=docs,
             embedding=self.embeddings,
@@ -92,36 +93,7 @@ class Chatbot:
         Returns:
             None
         """
-        map_prompt = hub.pull("rlm/map-prompt")
-        reduce_prompt = hub.pull("rlm/reduce-prompt")
-
-        map_chain = LLMChain(
-            llm=self.llm,
-            prompt=map_prompt,
-        )
-
-        reduce_chain = LLMChain(
-            llm=self.llm,
-            prompt=reduce_prompt,
-        )
-
-        combine_documents_chain = StuffDocumentsChain(
-            llm_chain=reduce_chain,
-            document_variable_name="doc_summaries",
-        )
-
-        reduce_documents_chain = ReduceDocumentsChain(
-            combine_documents_chain=combine_documents_chain,
-            collapse_documents_chain=combine_documents_chain,
-            token_max=4000,
-        )
-
-        self.summarizer = MapReduceDocumentsChain(
-            llm_chain=map_chain,
-            reduce_documents_chain=reduce_documents_chain,
-            document_variable_name="docs",
-            return_intermediate_steps=False,
-        )
+        self.summarizer = MapReduceSummarize(self.llm)
 
     def ask(self, question: str) -> str:
         """
@@ -152,10 +124,7 @@ class Chatbot:
         Returns:
             (str): The summary.
         """
-        docs = split_paper(self.paper)
-        result = self.summarizer.invoke(docs)
-
-        return result["output_text"]
+        return self.summarizer(self.paper)
 
     def extract_keywords(self) -> str:
         """
