@@ -77,7 +77,7 @@ class KeywordsExtractor:
         Returns:
             list[str]: The list of keywords.
         """
-        keywords_str = "\n".join(keywords)
+        keywords_str = ", ".join(keywords)
         all_keywords = self.extract_all_keywords_chain.invoke(
             {
                 "keywords": keywords_str,
@@ -101,7 +101,7 @@ class KeywordsExtractor:
         Returns:
             list[str]: The list of gist keywords.
         """
-        unique_keywords_str = "\n".join(unique_keywords)
+        unique_keywords_str = ", ".join(unique_keywords)
         gist_keywords = self.extract_gist_keywords_chain.invoke(
             {
                 "keywords": unique_keywords_str,
