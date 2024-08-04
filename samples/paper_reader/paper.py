@@ -86,6 +86,14 @@ def extract_paper_info(paper_path: Path, llm: BaseChatModel) -> dict:
             break
 
     data["abstract"] = abstarct
+
+    if data["year"] is None:
+        data["year"] = 0
+    if data["authors"] is None:
+        data["authors"] = []
+    if data["title"] is None:
+        data["title"] = ""
+
     return data
 
 
