@@ -26,7 +26,10 @@ class Paper(Base):
     __tablename__ = "papers"
 
     id = Column(Integer, primary_key=True)
-    url = Column(String)
+    title = Column(String)
+    authors = Column(JSON)
+    year = Column(Integer)
+    url = Column(String, unique=True)
     abstract = Column(String)
     keywords = Column(JSON)
 
