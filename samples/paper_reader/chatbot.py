@@ -150,4 +150,4 @@ class Chatbot:
         Returns:
             (list[str]): The keywords.
         """
-        return ", ".join(self.keywords_extractor(self.paper))
+        return self.keywords_extractor(self.paper)
