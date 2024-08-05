@@ -33,4 +33,8 @@ class MapReduceSummarizer:
         ]
         summaries_str = "\n".join(summaries)
 
-        return self.reduce_chain.invoke({"doc_summaries": summaries_str})
+        return self.reduce_chain.invoke(
+            {
+                "doc_summaries": summaries_str,
+            }
+        )
