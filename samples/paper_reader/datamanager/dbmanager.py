@@ -69,7 +69,7 @@ class DBManager:
         self.session.add(paper)
         self.session.commit()
 
-    def add_category(self, category: str):
+    def add_category_by_name(self, name: str):
         """
         Adds the category to the database.
 
@@ -79,7 +79,7 @@ class DBManager:
         Returns:
             None
         """
-        category = Category(name=category)
+        category = Category(name=name)
         self.session.add(category)
         self.session.commit()
 
