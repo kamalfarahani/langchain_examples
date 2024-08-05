@@ -7,6 +7,29 @@ from paper_reader.paper import Paper, load_paper
 from paper_reader.paper.info_exractor import PaperInfoExtractor
 
 
+def load_papers_from_path(llm: BaseChatModel, path: Path) -> list[Paper]:
+    """
+    Loads the papers from the path.
+
+    Args:
+        llm: The language model.
+        path: The path to the papers.
+
+    Returns:
+        (list[Paper]): The papers.
+    """
+    papers = []
+    for file in path.iterdir():
+        if file.suffix == ".pdf":
+            paper = load_paper_from_path(
+                llm=llm,
+                path=file,
+            )
+            papers.append(paper)
+
+    return papers
+
+
 def load_paper_from_path(llm: BaseChatModel, path: Path) -> Paper:
     """
     Loads the paper from the path.
