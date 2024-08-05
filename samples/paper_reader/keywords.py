@@ -4,26 +4,18 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.output_parsers.string import StrOutputParser
 
 from paper_reader.paper import Paper
-from paper_reader.prompts import (
-    extract_keywords_prompt,
-    extract_all_keywords_prompt,
-    extract_gist_keywords_prompt,
-)
+from paper_reader.summarize import MapReduceSummarizer
+from paper_reader.prompts import extract_keywords_prompt
 
 
 class KeywordsExtractor:
     def __init__(self, llm: BaseChatModel, chunk_size: int = 2500) -> None:
         self.llm = llm
         self.chunk_size = chunk_size
+        self.summarizer = MapReduceSummarizer(self.llm)
 
         self.extract_keywords_chain = (
             extract_keywords_prompt | self.llm | StrOutputParser()
-        )
-        self.extract_all_keywords_chain = (
-            extract_all_keywords_prompt | self.llm | StrOutputParser()
-        )
-        self.extract_gist_keywords_chain = (
-            extract_gist_keywords_prompt | self.llm | StrOutputParser()
         )
 
     def __call__(self, paper: Paper) -> list[str]:
@@ -36,96 +28,33 @@ class KeywordsExtractor:
         Returns:
             list[str]: The keywords.
         """
-        keywords = self.extarct_keywords_from_paper(paper)
-        unique_keywords = self.extarct_unique_keywords(keywords)
-        return self.extarct_gist_keywords(unique_keywords)
+        abstract = paper.abstract
+        summary = self.summarizer(paper)
+        keywords = self.extract_keywords(abstract, summary)
 
-    def extarct_keywords_from_paper(self, paper: Paper) -> list[str]:
+        return keywords
+
+    def extract_keywords(self, abstract: str, summary: str) -> list[str]:
         """
         Extracts the keywords from the paper.
 
         Args:
-            paper: The paper to extract the keywords from.
+            abstract: The abstract of the paper.
+            summary: The summary of the paper.
 
         Returns:
             list[str]: The keywords.
         """
-        docs = paper.split(chunk_size=self.chunk_size)
-        keywords = []
-        for doc in docs:
-            keywords.extend(self.extarct_keywords(doc.page_content))
+        keywords_json = self.extract_keywords_chain.invoke(
+            {
+                "abstract": abstract,
+                "summary": summary,
+            }
+        )
+
+        try:
+            keywords = json.loads(keywords_json)["keywords"]
+        except json.JSONDecodeError:
+            keywords = []
 
         return keywords
-
-    def extarct_keywords(self, text: str) -> list[str]:
-        """
-        Extracts the keywords from the text.
-
-        Args:
-            text: The text to extract the keywords from.
-
-        Returns:
-            list[str]: The keywords.
-        """
-        extracted_keywords = self.extract_keywords_chain.invoke(
-            {
-                "text": text,
-            }
-        )
-
-        try:
-            result = json.loads(extracted_keywords)["keywords"]
-        except json.JSONDecodeError:
-            print(f"Failed to extract keywords from: \n {extracted_keywords}")
-            print("_" * 40)
-            result = []
-
-        return result
-
-    def extarct_unique_keywords(self, keywords: list[str]) -> list[str]:
-        """
-        Give the list of keywords extract all unique keywords.
-        Args:
-            keywords: The list of keywords to extract all keywords from.
-
-        Returns:
-            list[str]: The list of keywords.
-        """
-        keywords_str = ", ".join(keywords)
-        all_keywords = self.extract_all_keywords_chain.invoke(
-            {
-                "keywords": keywords_str,
-            }
-        )
-
-        try:
-            result = json.loads(all_keywords)["keywords"]
-        except json.JSONDecodeError:
-            print(f"Failed to extract all keywords from {all_keywords}")
-            result = []
-
-        return result
-
-    def extarct_gist_keywords(self, unique_keywords: list[str]) -> list[str]:
-        """
-        Extract the gist keywords from the unique keywords.
-        Args:
-            unique_keywords: The list of unique keywords to extract the gist keywords from.
-
-        Returns:
-            list[str]: The list of gist keywords.
-        """
-        unique_keywords_str = ", ".join(unique_keywords)
-        gist_keywords = self.extract_gist_keywords_chain.invoke(
-            {
-                "keywords": unique_keywords_str,
-            }
-        )
-
-        try:
-            result = json.loads(gist_keywords)["keywords"]
-        except json.JSONDecodeError:
-            print(f"Failed to extract gist keywords from {gist_keywords}")
-            result = []
-
-        return result
