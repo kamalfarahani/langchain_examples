@@ -36,11 +36,11 @@ class KeywordsExtractor:
         Returns:
             list[str]: The keywords.
         """
-        keywords = self.extarct_keywords(paper)
+        keywords = self.extarct_keywords_from_paper(paper)
         unique_keywords = self.extarct_unique_keywords(keywords)
         return self.extarct_gist_keywords(unique_keywords)
 
-    def extarct_keywords(self, paper: Paper) -> list[str]:
+    def extarct_keywords_from_paper(self, paper: Paper) -> list[str]:
         """
         Extracts the keywords from the paper.
 
@@ -53,20 +53,34 @@ class KeywordsExtractor:
         docs = paper.split(chunk_size=self.chunk_size)
         keywords = []
         for doc in docs:
-            extracted_keywords = self.extract_keywords_chain.invoke(
-                {
-                    "text": doc.page_content,
-                }
-            )
-            try:
-                extracted_keywords_dict = json.loads(extracted_keywords)
-            except json.JSONDecodeError:
-                print(f"Failed to extract keywords from: \n {extracted_keywords}")
-                print("_" * 40)
-            else:
-                keywords.extend(extracted_keywords_dict["keywords"])
+            keywords.extend(self.extarct_keywords(doc.page_content))
 
         return keywords
+
+    def extarct_keywords(self, text: str) -> list[str]:
+        """
+        Extracts the keywords from the text.
+
+        Args:
+            text: The text to extract the keywords from.
+
+        Returns:
+            list[str]: The keywords.
+        """
+        extracted_keywords = self.extract_keywords_chain.invoke(
+            {
+                "text": text,
+            }
+        )
+
+        try:
+            result = json.loads(extracted_keywords)["keywords"]
+        except json.JSONDecodeError:
+            print(f"Failed to extract keywords from: \n {extracted_keywords}")
+            print("_" * 40)
+            result = []
+
+        return result
 
     def extarct_unique_keywords(self, keywords: list[str]) -> list[str]:
         """
@@ -87,7 +101,7 @@ class KeywordsExtractor:
         try:
             result = json.loads(all_keywords)["keywords"]
         except json.JSONDecodeError:
-            print(f"Failed to extract all keywords...")
+            print(f"Failed to extract all keywords from {all_keywords}")
             result = []
 
         return result
@@ -111,7 +125,7 @@ class KeywordsExtractor:
         try:
             result = json.loads(gist_keywords)["keywords"]
         except json.JSONDecodeError:
-            print(f"Failed to extract gist keywords...")
+            print(f"Failed to extract gist keywords from {gist_keywords}")
             result = []
 
         return result
