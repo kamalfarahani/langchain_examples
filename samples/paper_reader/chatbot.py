@@ -1,16 +1,11 @@
-from langchain_core.output_parsers.string import StrOutputParser
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.embeddings.embeddings import Embeddings
-from langchain import hub
 from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
-from langchain.chains.llm import LLMChain
 from langchain_chroma import Chroma
 
 from paper_reader.paper import Paper
-from paper_reader.summarize import MapReduceSummarize
+from paper_reader.summarize import MapReduceSummarizer
 from paper_reader.keywords import KeywordsExtractor
 from paper_reader.prompts import chat_prompt
 
@@ -95,7 +90,7 @@ class Chatbot:
         Returns:
             None
         """
-        self.summarizer = MapReduceSummarize(self.llm)
+        self.summarizer = MapReduceSummarizer(self.llm)
 
     def setup_keywords_extractor(self) -> None:
         """

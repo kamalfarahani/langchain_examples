@@ -5,7 +5,7 @@ from langchain_core.output_parsers.string import StrOutputParser
 from paper_reader.paper import Paper
 
 
-class MapReduceSummarize:
+class MapReduceSummarizer:
     def __init__(self, llm: BaseChatModel) -> None:
         self.llm = llm
         map_prompt = hub.pull("rlm/map-prompt")
