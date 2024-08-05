@@ -12,7 +12,7 @@ from langchain_chroma import Chroma
 from paper_reader.paper import Paper
 from paper_reader.summarize import MapReduceSummarize
 from paper_reader.keywords import KeywordsExtractor
-from paper_reader.prompts import chat_prompt, extract_keywords_prompt
+from paper_reader.prompts import chat_prompt
 
 
 class Chatbot:
