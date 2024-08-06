@@ -15,6 +15,7 @@ class KeywordClusterer:
         self,
         embeddings: Embeddings,
         db_manager: DBManager,
+        n_components: int = 256,
     ) -> None:
         """
         Initializes the keyword clusterer.
@@ -28,6 +29,7 @@ class KeywordClusterer:
         """
         self.embeddings = embeddings
         self.db_manager = db_manager
+        self.n_components = n_components
 
     def cluster_keywords(
         self,
@@ -44,14 +46,17 @@ class KeywordClusterer:
         Returns:
             (np.ndarray, np.ndarray): The raw keywords, the labels.
         """
-        raw_keywords, embedded_keywords = self.get_category_data(
-            category_name=category_name,
-            embeddings=self.embeddings,
-            db_manager=self.db_manager,
+        raw_keywords, embedded_keywords = self.get_category_data(category_name)
+
+        # This line is necessary for umap to work see [this issue](https://github.com/lmcinnes/umap/issues/201)
+        n_components = min(self.n_components, len(embedded_keywords) // 2)
+        embedded_keywords_reduced = reduce_dimensions(
+            data=embedded_keywords,
+            n_components=n_components,
         )
 
         dbscan = DBSCAN(min_samples=5, eps=0.5, n_jobs=-1)
-        dbscan.fit(embedded_keywords)
+        dbscan.fit(embedded_keywords_reduced)
 
         return raw_keywords, dbscan.labels_
 
