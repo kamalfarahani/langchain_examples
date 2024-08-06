@@ -34,7 +34,7 @@ class KeywordClusterer:
     def cluster_keywords(
         self,
         category_name: str,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Clusters the keywords.
 
@@ -44,7 +44,7 @@ class KeywordClusterer:
             db_manager: The database manager to use.
 
         Returns:
-            (np.ndarray, np.ndarray): The raw keywords, the labels.
+            (np.ndarray, np.ndarray, np.ndarray): The raw keywords, embedded keywords, and labels.
         """
         raw_keywords, embedded_keywords = self.get_category_data(category_name)
 
@@ -58,7 +58,7 @@ class KeywordClusterer:
         dbscan = DBSCAN(min_samples=5, eps=0.5, n_jobs=-1)
         dbscan.fit(embedded_keywords_reduced)
 
-        return raw_keywords, dbscan.labels_
+        return raw_keywords, embedded_keywords, dbscan.labels_
 
     def get_category_data(
         self,
