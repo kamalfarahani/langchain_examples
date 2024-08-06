@@ -5,7 +5,8 @@ from pathlib import Path
 from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
-from paper_reader.paper import extract_paper_info, load_paper
+from paper_reader.paper import load_paper
+from paper_reader.paper.utils import load_paper_from_path
 from paper_reader.chatbot import Chatbot
 
 
@@ -15,23 +16,10 @@ def main():
     embeddings = OllamaEmbeddings(model=model)
 
     paper_path = Path(input("Enter paper path: "))
-    paper_info = extract_paper_info(paper_path=paper_path, llm=llm)
+    paper = load_paper_from_path(llm=llm, path=paper_path)
 
     print("The paper abstract is:")
-    print_blue(paper_info["abstract"])
-
-    for key, value in paper_info.items():
-        if value is None:
-            paper_info[key] = "N/A"
-
-    paper = load_paper(
-        paper_path=paper_path,
-        title=paper_info["title"],
-        authors=paper_info["authors"],
-        year=paper_info["year"],
-        abstract=paper_info["abstract"],
-        url="https://example.com/paper",
-    )
+    print_blue(paper.abstract)
 
     chatbot = Chatbot(
         llm=llm,
