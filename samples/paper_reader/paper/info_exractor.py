@@ -54,6 +54,7 @@ class PaperInfoExtractor:
         try:
             info = json.loads(info_str)
         except json.JSONDecodeError:
+            print(f"Error parsing paper info: {info_str}")
             info = {
                 "title": "",
                 "authors": [],
