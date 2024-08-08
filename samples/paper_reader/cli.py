@@ -1,32 +1,18 @@
 import colorama
 
-from pathlib import Path
-
-from langchain_community.chat_models import ChatOllama
-from langchain_community.embeddings import OllamaEmbeddings
-
-from paper_reader.paper import load_paper
-from paper_reader.paper.utils import load_paper_from_path
 from paper_reader.chatbot import Chatbot
 
 
-def main():
-    model = input("Enter ollama model name: ")
-    llm = ChatOllama(model=model, temperature=0)
-    embeddings = OllamaEmbeddings(model=model)
+def main(chatbot: Chatbot) -> None:
+    """
+    The main function for the CLI.
 
-    paper_path = Path(input("Enter paper path: "))
-    paper = load_paper_from_path(llm=llm, path=paper_path)
+    Args:
+        chatbot: The chatbot.
 
-    print("The paper abstract is:")
-    print_blue(paper.abstract)
-
-    chatbot = Chatbot(
-        llm=llm,
-        embeddings=embeddings,
-        paper=paper,
-    )
-
+    Returns:
+        None
+    """
     while True:
         question = input_cyan("Enter question: ")
 
