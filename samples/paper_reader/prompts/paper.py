@@ -1,4 +1,4 @@
-from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 
 IS_THERE_ABSTRACT_PROMPT_TEXT = """\
@@ -14,7 +14,7 @@ DO NOT output any other text like "Here is the boolean value".
 
 
 EXTRACT_PAPER_INFO_PROMPT_TEXT = """\
-Given the first page of a paper extract the information in json format in the following schema:
+Given the first page of a paper extract the information in JSON format in the following schema:
 {{
     "title": str,
     "authors": list[str],
@@ -26,8 +26,7 @@ If any of the information is missing just put `null` in the json.
 Paper First Page:
 {page}
 
-Only output the json data in pure string format.
-DO NOT output any other text like "Here is the json data".
+Output the JSON data as a plain text string with no additional formatting, no code blocks, no markdown, and no additional text.
 """
 
 EXTRACT_ABSTRACT_PROMPT_TEXT = """\
