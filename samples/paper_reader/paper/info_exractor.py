@@ -5,6 +5,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.documents.base import Document
 
 from paper_reader.paper import Paper
+from paper_reader.summarize import MapReduceSummarizer
 from paper_reader.prompts import (
     extract_paper_info_prompt,
     extarct_abstract_prompt,
@@ -97,4 +98,14 @@ class PaperInfoExtractor:
                     }
                 )
 
-        return ""
+        summarizer = MapReduceSummarizer(llm=self.llm)
+        return summarizer(
+            Paper(
+                title="",
+                authors=[],
+                year=0,
+                url="",
+                abstract="",
+                pages=pages,
+            )
+        )
