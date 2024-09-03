@@ -142,6 +142,25 @@ class DBManager:
             .all()
         )
 
+    def get_keywords_by_category(self, category_id: int) -> list[str]:
+        """
+        Returns the keywords by the category id.
+
+        Args:
+            category_id: The id of the category.
+
+        Returns:
+            (list[str]): The keywords.
+        """
+        papers = self.get_papers_by_category(category_id)
+
+        keywords = []
+        for paper in papers:
+            keywords = json.loads(paper.keywords)["keywords"]
+            keywords.extend(keywords)
+
+        return keywords
+
     def get_categories(self) -> list[Category]:
         """
         Returns the categories.
