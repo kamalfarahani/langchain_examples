@@ -156,8 +156,8 @@ class DBManager:
 
         keywords = []
         for paper in papers:
-            keywords = json.loads(paper.keywords)["keywords"]
-            keywords.extend(keywords)
+            paper_keywords = json.loads(paper.keywords)["keywords"]
+            keywords.extend(paper_keywords)
 
         return keywords
 
